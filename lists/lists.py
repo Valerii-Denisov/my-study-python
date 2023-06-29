@@ -9,10 +9,11 @@ class ListExercise:
         :return: Список с замененными элементами
         """
         new_list = input_list.copy()
+        sorted_list = sorted(input_list.copy())
         counter = 0
         for element in new_list:
             if element > 0:
-                new_list[counter] = max(input_list)
+                new_list[counter] = sorted_list[-1]
             counter += 1
         return new_list
 
@@ -26,16 +27,37 @@ class ListExercise:
         :param query: Искомый элемент
         :return: Номер элемента
         """
-        first = 0
-        last = len(input_list) - 1
-        index = -1
-        while (first <= last) and (index == -1):
-            mid = (first + last) // 2
-            if input_list[mid] == query:
-                index = mid
+
+        def recursive_search(target_list: list[int], element: int, start: int, finish: int) -> int:
+            """
+            Функция рекурсивного двоичного поиска индекса элемента.
+
+            :param target_list: Целевой список
+            :param element: Искомый элемент
+            :param start: Индекс начального элемента поиска
+            :param finish: Индекс конечного элемента поиска
+            :return: Номер элемента
+            """
+            if finish < start:
+                return -1
+            middle = (start + finish) // 2
+            if target_list[middle] == element:
+                return middle
+            elif target_list[middle] < element:
+                return recursive_search(
+                    target_list,
+                    element,
+                    middle + 1,
+                    finish,
+                )
             else:
-                if query < input_list[mid]:
-                    last = mid - 1
-                else:
-                    first = mid + 1
-        return index
+                return recursive_search(
+                    target_list,
+                    element,
+                    start,
+                    middle - 1,
+                )
+
+        start = 0
+        finish = len(input_list) - 1
+        return recursive_search(input_list, query, start, finish)
