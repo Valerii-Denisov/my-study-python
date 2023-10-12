@@ -47,29 +47,29 @@ class FlaskExercise:
 
         @app.get("/user/<username>")
         def get_user(username: str) -> Response:
-            if username in database_dict.keys():
-                response = make_response({"data": "My name is {0}".format(username)}, 200)
+            if username not in database_dict:
+                response = response_user_not_in_database()
                 return response
-            response = response_user_not_in_database()
+            response = make_response({"data": "My name is {0}".format(username)}, 200)
             return response
 
         @app.patch("/user/<username>")
         def update_user(username: str) -> Response:
-            if username in database_dict.keys():
-                user_data = database_dict.get(username)
-                data = request.get_json()
-                del database_dict[username]
-                database_dict[data.get("name")] = user_data
-                response = make_response({"data": "My name is {0}".format(data.get("name"))}, 200)
+            if username not in database_dict:
+                response = response_user_not_in_database()
                 return response
-            response = response_user_not_in_database()
+            user_data = database_dict.get(username)
+            data = request.get_json()
+            del database_dict[username]
+            database_dict[data.get("name")] = user_data
+            response = make_response({"data": "My name is {0}".format(data.get("name"))}, 200)
             return response
 
         @app.delete("/user/<username>")
         def delete_user(username: str) -> Response:
-            if username in database_dict.keys():
-                del database_dict[username]
-                response = make_response({}, 204)
+            if username not in database_dict:
+                response = response_user_not_in_database()
                 return response
-            response = response_user_not_in_database()
+            del database_dict[username]
+            response = make_response({}, 204)
             return response
