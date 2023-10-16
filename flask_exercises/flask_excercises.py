@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, make_response, Response, request
 
 
 class FlaskExercise:
@@ -28,4 +28,48 @@ class FlaskExercise:
 
     @staticmethod
     def configure_routes(app: Flask) -> None:
-        pass
+        database_dict: dict = {}
+
+        def response_user_not_in_database() -> Response:
+            response = make_response({"errors": "The user does not exist"}, 404)
+            return response
+
+        @app.post("/user")
+        def create_user() -> Response:
+            data = request.get_json()
+            name = data.get("name", None)
+            if name is None:
+                response = make_response({"errors": {"name": "This field is required"}}, 422)
+                return response
+            database_dict[name] = {}
+            response = make_response({"data": "User {0} is created!".format(name)}, 201)
+            return response
+
+        @app.get("/user/<username>")
+        def get_user(username: str) -> Response:
+            if username not in database_dict:
+                response = response_user_not_in_database()
+                return response
+            response = make_response({"data": "My name is {0}".format(username)}, 200)
+            return response
+
+        @app.patch("/user/<username>")
+        def update_user(username: str) -> Response:
+            if username not in database_dict:
+                response = response_user_not_in_database()
+                return response
+            user_data = database_dict.get(username)
+            data = request.get_json()
+            del database_dict[username]
+            database_dict[data.get("name")] = user_data
+            response = make_response({"data": "My name is {0}".format(data.get("name"))}, 200)
+            return response
+
+        @app.delete("/user/<username>")
+        def delete_user(username: str) -> Response:
+            if username not in database_dict:
+                response = response_user_not_in_database()
+                return response
+            del database_dict[username]
+            response = make_response({}, 204)
+            return response
